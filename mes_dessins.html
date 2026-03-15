@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mes Dessins</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --cream: #faf8f4; --paper: #f5f1eb; --warm: #ede8e0;
+  --ink: #1c1917; --ink2: #44403c; --ink3: #a8a29e;
+  --accent: #c2692a; --accent2: #e8956d;
+  --shadow: 0 2px 16px rgba(28,25,23,0.08), 0 1px 4px rgba(28,25,23,0.06);
+  --shadow-hover: 0 8px 32px rgba(28,25,23,0.14), 0 2px 8px rgba(28,25,23,0.08);
+}
+html,body{background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;overscroll-behavior:none}
+header{position:sticky;top:0;z-index:50;background:rgba(250,248,244,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--warm);padding:18px 20px 14px}
+.header-top{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--ink);line-height:1}
+h1 em{font-style:italic;font-weight:400;color:var(--accent)}
+.counter{font-size:12px;color:var(--ink3);padding-bottom:3px}
+.search-wrap{position:relative}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink3)}
+#searchInput{width:100%;background:var(--paper);border:1.5px solid var(--warm);border-radius:14px;padding:11px 14px 11px 42px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--ink);outline:none;transition:border-color 0.2s,box-shadow 0.2s}
+#searchInput::placeholder{color:var(--ink3)}
+#searchInput:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(194,105,42,0.08)}
+.clear-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:var(--warm);border:none;cursor:pointer;width:22px;height:22px;border-radius:50%;display:none;align-items:center;justify-content:center;color:var(--ink3);font-size:12px}
+.clear-btn.visible{display:flex}
+.grid-wrap{padding:20px 16px 120px}
+.grid{columns:2;column-gap:12px}
+@media(min-width:500px){.grid{columns:3}}
+@media(min-width:760px){.grid{columns:4}}
+.card{break-inside:avoid;margin-bottom:12px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;position:relative;transition:transform 0.22s cubic-bezier(.34,1.4,.64,1),box-shadow 0.22s;animation:popIn 0.35s cubic-bezier(.34,1.4,.64,1) both}
+@keyframes popIn{from{opacity:0;transform:scale(0.88) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.card:hover{transform:translateY(-3px) scale(1.015);box-shadow:var(--shadow-hover)}
+.card img{width:100%;display:block;object-fit:cover;background:var(--paper)}
+.card-label{padding:8px 10px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.card-title{font-size:12px;font-weight:500;color:var(--ink2);line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card-date{font-size:10px;color:var(--ink3);white-space:nowrap;flex-shrink:0}
+.card-del{position:absolute;top:7px;right:7px;width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,0.88);border:1px solid rgba(28,25,23,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:var(--ink3);opacity:0;transition:opacity 0.15s;backdrop-filter:blur(4px)}
+.card:hover .card-del{opacity:1}
+.card-del:hover{background:#fff;color:#c0392b}
+.empty{text-align:center;padding:64px 20px}
+.empty-art{font-size:52px;margin-bottom:16px;opacity:0.5}
+.empty-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--ink2);margin-bottom:8px}
+.empty-sub{font-size:14px;color:var(--ink3);line-height:1.6}
+.fab{position:fixed;bottom:28px;right:20px;z-index:60;width:58px;height:58px;border-radius:18px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(194,105,42,0.4);transition:transform 0.2s cubic-bezier(.34,1.4,.64,1),box-shadow 0.2s}
+.fab:hover{transform:scale(1.08)}
+.fab:active{transform:scale(0.94)}
+.fab svg{color:#fff}
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(15,12,10,0.55);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.overlay.open{opacity:1;pointer-events:all}
+.sheet{background:var(--cream);border-radius:24px 24px 0 0;width:100%;max-width:520px;padding:0 0 32px;transform:translateY(100%);transition:transform 0.35s cubic-bezier(.32,0,.15,1);max-height:92vh;overflow-y:auto}
+.overlay.open .sheet{transform:translateY(0)}
+.handle{width:36px;height:4px;background:var(--warm);border-radius:2px;margin:14px auto 20px}
+.sheet-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;padding:0 20px;margin-bottom:20px;color:var(--ink)}
+.upload-zone{margin:0 20px 18px;border-radius:16px;overflow:hidden;background:var(--paper);border:2px dashed var(--warm);position:relative;cursor:pointer;min-height:180px;display:flex;align-items:center;justify-content:center;transition:border-color 0.2s}
+.upload-zone:hover{border-color:var(--accent2)}
+.upload-zone.filled{border-style:solid;border-color:transparent;min-height:0}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-ph{text-align:center;padding:28px 20px;pointer-events:none}
+.upload-ph .cam{font-size:36px;margin-bottom:10px;opacity:0.5}
+.upload-ph p{font-size:13px;color:var(--ink3);line-height:1.7}
+.upload-ph strong{color:var(--accent)}
+#previewImg{width:100%;display:block;border-radius:14px;max-height:260px;object-fit:contain}
+.field{padding:0 20px;margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:7px}
+.field input{width:100%;background:var(--paper);border:1.5px solid var(--warm);border-radius:12px;padding:13px 14px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--ink);outline:none;transition:border-color 0.2s,box-shadow 0.2s}
+.field input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(194,105,42,0.08)}
+.field input::placeholder{color:var(--ink3)}
+.btn-save{display:block;width:calc(100% - 40px);margin:18px 20px 0;background:var(--accent);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:15px;border-radius:14px;transition:background 0.15s,transform 0.15s}
+.btn-save:hover{background:#b05c25}
+.btn-save:active{transform:scale(0.98)}
+.btn-save:disabled{background:var(--warm);color:var(--ink3);cursor:not-allowed}
+.lb-box{background:var(--cream);border-radius:24px 24px 0 0;width:100%;max-width:520px;transform:translateY(100%);transition:transform 0.35s cubic-bezier(.32,0,.15,1);overflow:hidden;max-height:95vh;display:flex;flex-direction:column}
+.overlay.open .lb-box{transform:translateY(0)}
+.lb-img{flex:1;background:var(--paper)}
+.lb-img img{width:100%;max-height:72vh;object-fit:contain;display:block}
+.lb-foot{padding:16px 20px 32px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--warm)}
+.lb-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.lb-date{font-size:12px;color:var(--ink3)}
+.lb-close{background:var(--paper);border:1.5px solid var(--warm);width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink3);font-size:16px;flex-shrink:0}
+.lb-close:hover{background:var(--warm)}
+mark{background:rgba(194,105,42,0.18);border-radius:3px;padding:0 1px;color:inherit}
+.saving{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:200}
+.saving.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>Mes <em>dessins</em></h1>
+    <span class="counter" id="counter">0 dessin</span>
+  </div>
+  <div class="search-wrap">
+    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Rechercher un dessin…" autocomplete="off" oninput="onSearch()">
+    <button class="clear-btn" id="clearBtn" onclick="clearSearch()">✕</button>
+  </div>
+</header>
+
+<div class="grid-wrap"><div class="grid" id="grid"></div></div>
+
+<button class="fab" onclick="openSheet()">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<div class="saving" id="savingToast">Enregistrement…</div>
+
+<!-- SHEET AJOUT -->
+<div class="overlay" id="addOverlay" onclick="bgClick(event,'addOverlay',closeSheet)">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-title">Nouveau dessin</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" accept="image/*" id="fileInput" onchange="onFile(event)">
+      <div class="upload-ph" id="uploadPh">
+        <div class="cam">📷</div>
+        <p><strong>Prendre une photo</strong><br>ou importer depuis la galerie</p>
+      </div>
+      <img id="previewImg" style="display:none">
+    </div>
+    <div class="field">
+      <label>Titre</label>
+      <input type="text" id="titleInput" placeholder="Ex: Paysage de montagne…" maxlength="80" oninput="checkReady()">
+    </div>
+    <button class="btn-save" id="saveBtn" disabled onclick="saveDrawing()">Enregistrer</button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="overlay" id="lbOverlay" onclick="bgClick(event,'lbOverlay',closeLb)">
+  <div class="lb-box">
+    <div class="lb-img"><img id="lbImg" src="" alt=""></div>
+    <div class="lb-foot">
+      <div><div class="lb-title" id="lbTitle"></div><div class="lb-date" id="lbDate"></div></div>
+      <button class="lb-close" onclick="closeLb()">✕</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── IndexedDB (stockage illimité) ──
+let db, drawings = [], pendingImg = null, query = '';
+
+function initDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open('MesDessins', 1);
+    req.onupgradeneeded = e => {
+      const store = e.target.result.createObjectStore('dessins', { keyPath: 'id' });
+      store.createIndex('ts', 'ts');
+    };
+    req.onsuccess = e => { db = e.target.result; res(); };
+    req.onerror = () => rej();
+  });
+}
+
+function getAll() {
+  return new Promise(res => {
+    const req = db.transaction('dessins').objectStore('dessins').getAll();
+    req.onsuccess = () => res(req.result.sort((a,b) => b.ts - a.ts));
+  });
+}
+
+function addToDB(item) {
+  return new Promise(res => {
+    db.transaction('dessins','readwrite').objectStore('dessins').add(item).onsuccess = res;
+  });
+}
+
+function deleteFromDB(id) {
+  return new Promise(res => {
+    db.transaction('dessins','readwrite').objectStore('dessins').delete(id).onsuccess = res;
+  });
+}
+
+// ── Compression (réduit sans perdre la qualité visuelle) ──
+function compress(file) {
+  return new Promise(res => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const MAX = 1400;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg', 0.78));
+    };
+    img.src = url;
+  });
+}
+
+function fmt(ts) {
+  return new Date(ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function hl(text, q) {
+  if (!q) return text;
+  return text.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
+}
+
+function render() {
+  const q = query.trim().toLowerCase();
+  const list = q ? drawings.filter(d => d.title.toLowerCase().includes(q)) : drawings;
+  document.getElementById('counter').textContent = drawings.length + ' dessin' + (drawings.length !== 1 ? 's' : '');
+  const grid = document.getElementById('grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty" style="column-span:all">
+      <div class="empty-art">${q ? '🔍' : '✏️'}</div>
+      <div class="empty-title">${q ? 'Aucun résultat' : 'Aucun dessin encore'}</div>
+      <div class="empty-sub">${q ? 'Essaie un autre titre.' : 'Appuie sur + pour ajouter<br>ton premier dessin.'}</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = list.map((d,i) => `
+    <div class="card" style="animation-delay:${Math.min(i,12)*0.035}s" onclick="openLb('${d.id}')">
+      <img src="${d.img}" loading="lazy" alt="${d.title}">
+      <div class="card-label">
+        <div class="card-title">${hl(d.title, q)}</div>
+        <div class="card-date">${fmt(d.ts)}</div>
+      </div>
+      <button class="card-del" onclick="del(event,'${d.id}')">✕</button>
+    </div>`).join('');
+}
+
+function onSearch() {
+  query = document.getElementById('searchInput').value;
+  document.getElementById('clearBtn').classList.toggle('visible', query.length > 0);
+  render();
+}
+function clearSearch() {
+  document.getElementById('searchInput').value = ''; query = '';
+  document.getElementById('clearBtn').classList.remove('visible'); render();
+}
+
+function openSheet() {
+  document.getElementById('addOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('titleInput').focus(), 380);
+}
+function closeSheet() {
+  document.getElementById('addOverlay').classList.remove('open');
+  pendingImg = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('uploadPh').style.display = '';
+  document.getElementById('uploadZone').classList.remove('filled');
+  document.getElementById('titleInput').value = '';
+  document.getElementById('saveBtn').disabled = true;
+  document.getElementById('saveBtn').textContent = 'Enregistrer';
+}
+
+async function onFile(e) {
+  const file = e.target.files[0]; if (!file) return;
+  document.getElementById('saveBtn').disabled = true;
+  document.getElementById('saveBtn').textContent = 'Compression…';
+  pendingImg = await compress(file);
+  const img = document.getElementById('previewImg');
+  img.src = pendingImg; img.style.display = 'block';
+  document.getElementById('uploadPh').style.display = 'none';
+  document.getElementById('uploadZone').classList.add('filled');
+  document.getElementById('saveBtn').textContent = 'Enregistrer';
+  checkReady();
+  setTimeout(() => document.getElementById('titleInput').focus(), 100);
+}
+
+function checkReady() {
+  document.getElementById('saveBtn').disabled = !(document.getElementById('titleInput').value.trim() && pendingImg);
+}
+
+function toast(msg) {
+  const t = document.getElementById('savingToast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+async function saveDrawing() {
+  const title = document.getElementById('titleInput').value.trim();
+  if (!title || !pendingImg) return;
+  document.getElementById('saveBtn').disabled = true;
+  document.getElementById('saveBtn').textContent = 'Enregistrement…';
+  toast('Enregistrement…');
+  const item = { id: 'D'+Date.now(), title, img: pendingImg, ts: Date.now() };
+  await addToDB(item);
+  drawings.unshift(item);
+  render(); closeSheet();
+  toast('✓ Dessin ajouté !');
+}
+
+async function del(e, id) {
+  e.stopPropagation();
+  await deleteFromDB(id);
+  drawings = drawings.filter(d => d.id !== id);
+  render();
+}
+
+function openLb(id) {
+  const d = drawings.find(x => x.id === id); if (!d) return;
+  document.getElementById('lbImg').src = d.img;
+  document.getElementById('lbTitle').textContent = d.title;
+  document.getElementById('lbDate').textContent = fmt(d.ts);
+  document.getElementById('lbOverlay').classList.add('open');
+}
+function closeLb() { document.getElementById('lbOverlay').classList.remove('open'); }
+function bgClick(e, id, fn) { if (e.target === document.getElementById(id)) fn(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSheet(); closeLb(); }});
+
+// Drag & drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#c2692a'; });
+zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.style.borderColor = '';
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) {
+    const dt = new DataTransfer(); dt.items.add(f);
+    document.getElementById('fileInput').files = dt.files;
+    document.getElementById('fileInput').dispatchEvent(new Event('change'));
+  }
+});
+
+initDB().then(async () => { drawings = await getAll(); render(); });
+</script>
+</body>
+</html>
